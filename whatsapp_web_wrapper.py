@@ -1,14 +1,25 @@
 import time
 
+from apscheduler.schedulers.background import BackgroundScheduler
 from selenium import webdriver
 
-WHATSAPP_WEB_URL = "https://web.whatsapp.com/"
+WHATSAPP_WEB_URL = 'https://web.whatsapp.com/'
 
 
-class WhatsappWebWrapper:
+class WhatsappWeb:
+    """
+    Whatsapp Web wrapper class
+    """
+
     def __init__(self):
+        """
+        Initializes whatsapp web driver and the scheduler for async tasks.
+        """
         self.__driver = webdriver.Firefox()
         self.__driver.get(WHATSAPP_WEB_URL)
+        self.__scheduler = BackgroundScheduler()
+
+        input("Connect With your phone and then click enter..")
 
     def navigate_to_contact_chat(self, contact_name):
         """
@@ -70,8 +81,12 @@ class WhatsappWebWrapper:
         send_button_elem.click()
 
     def __close(self):
+        """
+        Close operation for the whatsapp web wrapper, cleans resources and kills all jobs.
+        """
         self.__driver.close()
         self.__driver.quit()
+        self.__scheduler.shutdown(wait=False)
 
     def __enter__(self):
         return self
@@ -80,7 +95,29 @@ class WhatsappWebWrapper:
         self.__close()
 
 
-class WhatsappMessageScheduler:
+class Contact:
     """
-    Whatsapp Web message scheduler. handles sending messages to contacts at certain times.
+    Class represents an entity that can be interacted by chat,
+    it can be a group or a private chat
     """
+    pass
+
+# class WhatsappMessageScheduler:
+#     """
+#     Whatsapp Web message scheduler. handles sending messages to contacts at certain times.
+#     """
+#
+#     def __init__(self):
+#         self.__scheduler = BackgroundScheduler()
+#
+#
+#
+#     def shutdown(self):
+#         """
+#         Shutting down the scheduler, discarding all scheduled jobs.
+#         """
+#         self.__scheduler.shutdown(wait=False)
+#         print('Shutdown the scheduler successfully')
+#
+#     def __del__(self):
+#         self.shutdown()

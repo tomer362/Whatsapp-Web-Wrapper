@@ -1,11 +1,10 @@
 # *-* coding: utf-8 *-*
 
-from whatsapp_web_wrapper import WhatsappWebWrapper
+from whatsapp_web_wrapper import WhatsappWeb
 
 
 def main():
-    with WhatsappWebWrapper() as whatsapp_web:
-        input("Connect With your phone and then click enter..")
+    with WhatsappWeb() as whatsapp_web:
         whatsapp_web.send_message('אני', 'בדיקה בדיקה', should_navigate_first=True)
 
 
