@@ -95,12 +95,9 @@ class WhatsappWeb:
         self.__close()
 
 
-class Contact:
-    """
-    Class represents an entity that can be interacted by chat,
-    it can be a group or a private chat
-    """
-    pass
+
+
+
 
 # class WhatsappMessageScheduler:
 #     """
