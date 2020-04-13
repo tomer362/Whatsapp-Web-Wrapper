@@ -26,6 +26,17 @@ class Contact:
 
             return navigate_wrapper
 
+        @staticmethod
+        def lock_decorator(method):
+            @wraps(method)
+            def lock_wrapper(self, *args, **kwargs):
+                with self.whatsapp_obj.web_lock:
+                    method_result = method(self, *args, **kwargs)
+
+                return method_result
+
+            return lock_wrapper
+
     def __init__(self, name, whatsapp_obj):
         """
         Initializes Contact object.
@@ -43,6 +54,7 @@ class Contact:
         """
         Click's on the first contact that matches the contact name. waits between every interaction for safety.
         """
+
         # Find the contact search bar so we can focus on it by clicking.
         contact_search_bar = self.web_driver.find_elements_by_xpath(
             "//div[@id='side']//div[contains(@class, 'copyable-text selectable-text')]")[0]
@@ -58,14 +70,15 @@ class Contact:
 
         # Whatsapp randomizes the order of the divs in the panel of contacts so we need to get the order by location
         # in y axis
-        contat_elements = self.web_driver.find_elements_by_xpath(
+        contact_elements = self.web_driver.find_elements_by_xpath(
             "//div[@id='side']//div[@id='pane-side']/div/div/div/div")
-        contact_elems_sorted_by_y_loc = sorted(contat_elements, key=lambda x: x.location['y'])
+        contact_elems_sorted_by_y_loc = sorted(contact_elements, key=lambda x: x.location['y'])
         contact_elems_sorted_by_y_loc[1].click()
 
         # Waits for contact chat to open.
         time.sleep(1.5)
 
+    @ContactDecorators.lock_decorator
     @ContactDecorators.navigate_decorator
     def send_message(self, message):
         """
@@ -74,19 +87,20 @@ class Contact:
         @type message: C{str}
         """
 
-        chat_text_box_elem = self.web_driver.find_element_by_xpath(
-            "//div[@id='main']//div[contains(@class, 'copyable-text selectable-text')]"
-        )
-        chat_text_box_elem.click()
-        chat_text_box_elem.send_keys(message)
+        with self.whatsapp_obj.web_lock:
+            chat_text_box_elem = self.web_driver.find_element_by_xpath(
+                "//div[@id='main']//div[contains(@class, 'copyable-text selectable-text')]"
+            )
+            chat_text_box_elem.click()
+            chat_text_box_elem.send_keys(message)
 
-        # Wait for send button to be created
-        time.sleep(0.4)
+            # Wait for send button to be created
+            time.sleep(0.4)
 
-        # Find the send button and click it (by finding the send icon first and then going up to the button)
-        send_button_elem = self.web_driver.find_element_by_xpath(
-            "//div[@id='main']//footer//span[@data-icon='send']/..")
-        send_button_elem.click()
+            # Find the send button and click it (by finding the send icon first and then going up to the button)
+            send_button_elem = self.web_driver.find_element_by_xpath(
+                "//div[@id='main']//footer//span[@data-icon='send']/..")
+            send_button_elem.click()
 
     @ContactDecorators.navigate_decorator
     def receive_message(self, message):

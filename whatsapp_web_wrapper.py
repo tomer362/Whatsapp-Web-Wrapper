@@ -1,5 +1,9 @@
+from threading import Lock
+
 from apscheduler.schedulers.background import BackgroundScheduler
 from selenium import webdriver
+
+from client import Contact
 
 WHATSAPP_WEB_URL = 'https://web.whatsapp.com/'
 
@@ -15,21 +19,18 @@ class WhatsappWeb:
         """
         self.web_driver = webdriver.Firefox()
         self.web_driver.get(WHATSAPP_WEB_URL)
-        self.__lock = False
+        self.__web_lock = Lock()
         self.__scheduler = BackgroundScheduler()
 
         input("Connect with your phone and then click enter..")
 
     @property
-    def lock(self):
-        return self.__lock
-
-    @lock.setter
-    def lock(self, value):
+    def web_lock(self):
         """
-        @type value: C{bool}
+        @return: Returns threading lock
+        @rtype: Lock
         """
-        self.__lock = value
+        return self.__web_lock
 
     def __close(self):
         """
