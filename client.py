@@ -1,6 +1,9 @@
 import time
 from functools import wraps
 
+WAIT_FOR_SEARCH_TIMEOUT = 5
+WAIT_FOR_SEARCH_TIME = 0.1
+
 
 class Contact:
     """
@@ -50,6 +53,22 @@ class Contact:
         self.whatsapp_obj = whatsapp_obj
         self.web_driver = whatsapp_obj.web_driver
 
+    def wait_for_search(self):
+        should_wait = True
+        total_time_waited = 0
+
+        # Should wait until the looping icon disappeares from the search bar or if timeout occurs
+        while should_wait and total_time_waited < WAIT_FOR_SEARCH_TIMEOUT:
+            search_result_child_elems = self.web_driver.find_elements_by_xpath(
+                "//div[@id='side']/div/div/span/button")
+            if len(search_result_child_elems) > 0:
+                if search_result_child_elems[0].tag_name == 'button':
+                    should_wait = False
+
+            if should_wait:
+                time.sleep(WAIT_FOR_SEARCH_TIME)
+                total_time_waited += WAIT_FOR_SEARCH_TIME
+
     def navigate_to_contact(self):
         """
         Click's on the first contact that matches the contact name. waits between every interaction for safety.
@@ -64,19 +83,21 @@ class Contact:
         contact_search_bar.send_keys(self.name)
 
         # Wait for the search to work for sure
-        # TODO: make it smart by searching for the search looping icon and if it disappeares it mean the search ended
-        #  (or some other form of ending of search).
-        time.sleep(1.5)
+        self.wait_for_search()
 
         # Whatsapp randomizes the order of the divs in the panel of contacts so we need to get the order by location
         # in y axis
         contact_elements = self.web_driver.find_elements_by_xpath(
             "//div[@id='side']//div[@id='pane-side']/div/div/div/div")
-        contact_elems_sorted_by_y_loc = sorted(contact_elements, key=lambda x: x.location['y'])
-        contact_elems_sorted_by_y_loc[1].click()
+        contact_elems_sorted_by_y_loc = sorted(contact_elements, key=lambda elem: elem.location['y'])
+        if len(contact_elems_sorted_by_y_loc) > 0:
+            contact_elems_sorted_by_y_loc[1].click()
 
-        # Waits for contact chat to open.
-        time.sleep(1.5)
+            # Waits for contact chat to open.
+            time.sleep(0.5)
+            return True
+        else:
+            return False
 
     @ContactDecorators.lock_decorator
     @ContactDecorators.navigate_decorator
@@ -86,21 +107,19 @@ class Contact:
         @param message: Chat message. can be text or media.
         @type message: C{str}
         """
+        chat_text_box_elem = self.web_driver.find_element_by_xpath(
+            "//div[@id='main']//div[contains(@class, 'copyable-text selectable-text')]"
+        )
+        chat_text_box_elem.click()
+        chat_text_box_elem.send_keys(message)
 
-        with self.whatsapp_obj.web_lock:
-            chat_text_box_elem = self.web_driver.find_element_by_xpath(
-                "//div[@id='main']//div[contains(@class, 'copyable-text selectable-text')]"
-            )
-            chat_text_box_elem.click()
-            chat_text_box_elem.send_keys(message)
+        # Wait for send button to be created
+        time.sleep(0.4)
 
-            # Wait for send button to be created
-            time.sleep(0.4)
-
-            # Find the send button and click it (by finding the send icon first and then going up to the button)
-            send_button_elem = self.web_driver.find_element_by_xpath(
-                "//div[@id='main']//footer//span[@data-icon='send']/..")
-            send_button_elem.click()
+        # Find the send button and click it (by finding the send icon first and then going up to the button)
+        send_button_elem = self.web_driver.find_element_by_xpath(
+            "//div[@id='main']//footer//span[@data-icon='send']/..")
+        send_button_elem.click()
 
     @ContactDecorators.navigate_decorator
     def receive_message(self, message):

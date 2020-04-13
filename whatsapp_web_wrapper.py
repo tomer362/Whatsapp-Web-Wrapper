@@ -1,3 +1,5 @@
+import os
+import pickle
 from threading import Lock
 
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -17,8 +19,12 @@ class WhatsappWeb:
         """
         Initializes whatsapp web driver and the scheduler for async tasks.
         """
-        self.web_driver = webdriver.Firefox()
+
+        fp = webdriver.FirefoxProfile(
+            r'D:\Program Files\Tomer\SideProjects\Programming\WhatsappWeb\firefox_profiles\FirefoxProfile')
+        self.web_driver = webdriver.Firefox(firefox_profile=fp)
         self.web_driver.get(WHATSAPP_WEB_URL)
+
         self.__web_lock = Lock()
         self.__scheduler = BackgroundScheduler()
 
@@ -32,10 +38,15 @@ class WhatsappWeb:
         """
         return self.__web_lock
 
+    def test(self):
+        a = Contact('עומר רוזנבליט', self)
+        a.send_message('<<<<<<<<<<<<<<<< Flex Bro >>>>>>>>>>>>>>>>')
+
     def __close(self):
         """
         Close operation for the whatsapp web wrapper, cleans resources and kills all jobs.
         """
+
         self.web_driver.close()
         self.web_driver.quit()
 

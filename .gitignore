@@ -142,3 +142,4 @@ cython_debug/
 
 # Pycharm's .idea file
 .idea/*
+firefox_profiles/
