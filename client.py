@@ -1,7 +1,7 @@
 import time
 from functools import wraps
 
-WAIT_FOR_SEARCH_TIMEOUT = 5
+WAIT_FOR_SEARCH_TIMEOUT = 10
 WAIT_FOR_SEARCH_TIME = 0.1
 
 
@@ -15,7 +15,7 @@ class Contact:
         @staticmethod
         def navigate_decorator(method):
             """
-            In order to send or recive messages to contact, you must first navigate to the contact,
+            In order to send or recive message_obj to contact, you must first navigate to the contact,
             using WhatsappWeb.navigate_to_contact_chat method.
 
             this decorator used to navigate to speocific contact, before initial the above actions
@@ -53,7 +53,7 @@ class Contact:
         self.whatsapp_obj = whatsapp_obj
         self.web_driver = whatsapp_obj.web_driver
 
-    def wait_for_search(self):
+    def __wait_for_search(self):
         should_wait = True
         total_time_waited = 0
 
@@ -83,9 +83,9 @@ class Contact:
         contact_search_bar.send_keys(self.name)
 
         # Wait for the search to work for sure
-        self.wait_for_search()
+        self.__wait_for_search()
 
-        # Whatsapp randomizes the order of the divs in the panel of contacts so we need to get the order by location
+        # Whatsapp randomizes the order of the divs in the panel of contact_name so we need to get the order by location
         # in y axis
         contact_elements = self.web_driver.find_elements_by_xpath(
             "//div[@id='side']//div[@id='pane-side']/div/div/div/div")
@@ -103,8 +103,8 @@ class Contact:
     @ContactDecorators.navigate_decorator
     def send_message(self, message):
         """
-        Sends a message to this contact.
-        @param message: Chat message. can be text or media.
+        Sends a message_obj to this contact.
+        @param message: Chat message_obj. can be text or media.
         @type message: C{str}
         """
         chat_text_box_elem = self.web_driver.find_element_by_xpath(
@@ -123,7 +123,7 @@ class Contact:
 
     @ContactDecorators.navigate_decorator
     def receive_message(self, message):
-        # TODO - recive withoud actually reading the message
+        # TODO - recive withoud actually reading the message_obj
         pass
 
     @ContactDecorators.navigate_decorator
@@ -139,6 +139,6 @@ class Message:
 
     def convert_to_msg(self):
         """
-        run operations nedded to convert the message from plain text to WhatappWeb format
+        run operations nedded to convert the message_obj from plain text to WhatappWeb format
         """
         pass
